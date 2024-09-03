@@ -1,0 +1,60 @@
+[tool.poetry]
+name = "business-control-management"
+version = "0.1.0"
+description = ""
+authors = ["alex <goculenko.al@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+python-dotenv = "^1.0.1"
+fastapi = "^0.112.2"
+pydantic-settings = "^2.4.0"
+uvicorn = "^0.30.6"
+loguru = "^0.7.2"
+orjson = "^3.10.7"
+sqlalchemy = {extras = ["asyncio"], version = "^2.0.32"}
+alembic = "^1.13.2"
+asyncpg = "^0.29.0"
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.6.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+# Set the maximum line length to 79.
+line-length = 120
+exclude = ["alembic/*", "tests/*"]
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["ALL"]
+extend-select = ["W", "E"]
+preview = true
+ignore = [
+    "ANN401", # any-type
+    "B008", # function-call-in-default-argument
+    "B904", # raise-without-from-inside-except
+    "BLE001", # blind-except
+    "CPY001", # missing-copyright-notice
+    "D100", # undocumented-public-module
+    "D101", # undocumented-public-class
+    "D102", # undocumented-public-method
+    "D103", # undocumented-public-function
+    "D104", # undocumented-public-package
+    "D105", # undocumented-magic-method
+    "D107", # undocumented-public-init
+    "DOC201", # undocumented-return
+    "D203", # one-blank-line-before-class
+    "D213", # multi-line-summary-second-line
+    "DOC501", # docstring-missing-exception
+    "FAST002", # fast-api-non-annotated-dependency
+    "INP001", # implicit-namespace-package
+    "RUF009", # function-call-in-dataclass-default-argument
+    "I001", # import block is un-sorted or un-formatted
+    "T201", # ignore print
+]

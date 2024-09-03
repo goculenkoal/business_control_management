@@ -1,0 +1,44 @@
+gitignore
+# Системные файлы
+.DS_Store
+Thumbs.db
+
+# Папки виртуальной среды
+venv/
+env/
+.env/
+
+# Скомпилированные файлы Python
+__pycache__/
+*.py[cod]
+
+# Логи
+*.log
+*.out
+
+# Папки и файлы конфигурации IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Папки тестирования
+../../Downloads/pytest_course-master/tests/tests1/__pycache__/
+tests/*.pyc
+tests/*.coverage
+*.coverage
+
+# Другие игнорируемые файлы
+*.egg-info/
+*.egg
+dist/
+build/
+
+# Файлы конфигурации
+*.env
+#*.ini
+*.yaml
+*.json
+
+# Pytest
+.cache
