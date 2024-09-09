@@ -4,6 +4,8 @@ from collections.abc import Callable, Awaitable
 from types import TracebackType
 from typing import Never, Any
 
+from src.repositories.invite import InviteRepository
+from src.repositories.account import AccountRepository
 from src.databases.database import async_session_maker
 from src.repositories.user import EmployeeRepository
 
@@ -41,11 +43,14 @@ class UnitOfWork(AbstractUnitOfWork):
     """The class responsible for the atomicity of transactions."""
 
     def __init__(self) -> None:
+
         self.session_factory = async_session_maker
 
     async def __aenter__(self) -> None:
         self.session = self.session_factory()
         self.user = EmployeeRepository(self.session)
+        self.account = AccountRepository(self.session)
+        self.invite = InviteRepository(self.session)
 
     async def __aexit__(
             self,

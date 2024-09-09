@@ -12,7 +12,9 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from src.config import settings
 from src.models.base import BaseModel
 from src.models.user import UserModel
-
+# from src.models.product import ProductModel
+from src.models.account import AccountModel
+from src.models.invite import InviteModel
 sys.path.append(str(Path(sys.path[0]) / 'src'))
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

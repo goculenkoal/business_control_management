@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     DB_USER: str
     DB_PASS: str
     DB_NAME: str
+    SENDER_EMAIL: str
+    SENDER_PASSWORD: str
 
     @property
     def DB_URL(self) -> str:
