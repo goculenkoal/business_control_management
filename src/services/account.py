@@ -1,17 +1,25 @@
+from typing import TYPE_CHECKING
+
 from fastapi import HTTPException
-from pydantic import UUID4, EmailStr
+from pydantic import EmailStr
+from sqlalchemy import UUID
 from sqlalchemy.exc import IntegrityError
 from starlette import status
 
-from src.schemas.sign_up import SingUpSchema
+from src.models.user import UserModel
+from src.schemas.sign_up import SingUpSchema, SingUpCompleteSchema
 from src.models.invite import InviteModel
-from src.schemas.account import CreateAccountRequest
 from src.models.account import AccountModel
 from src.utils.service import BaseService
 from src.utils.unit_of_work import transaction_mode
 from src.utils.generate_invite_code import generate_code
 from src.utils.send_invite_code_to_mail import send_invite_code_to_email
 import logging
+
+if TYPE_CHECKING:
+    from src.models.company import CompanyModel
+
+from utils.hash_password import hash_password
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +37,6 @@ class AccountService(BaseService):
                 logger.warning("Registration attempted with existing email: %s", email)
                 raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This email already exists")
 
-            # Генерация кода приглашения
             code = generate_code()
 
             # Попытка добавить приглашение
@@ -52,16 +59,6 @@ class AccountService(BaseService):
             return invite
 
     @transaction_mode
-    async def create_account(self, account: CreateAccountRequest) -> AccountModel:
-        """Create Account."""
-        return await self.uow.account.add_one_and_get_obj(**account.model_dump())
-
-    @transaction_mode
-    async def check_id_account(self, account_id: UUID4) -> AccountModel:
-        """Create user."""
-        return await self.uow.account.get_by_query_one_or_none(id=account_id)
-
-    @transaction_mode
     async def check_invite_token(self, account: SingUpSchema) -> InviteModel:
         invite: InviteModel | None = await self.uow.invite.get_by_query_one_or_none(
             email=account.account_email,
@@ -73,3 +70,48 @@ class AccountService(BaseService):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invite token not found or expired")
 
         return invite
+
+    @transaction_mode
+    async def register_company(self, sign_up_data: SingUpCompleteSchema) -> SingUpCompleteSchema:
+        try:
+            company: CompanyModel = await self.uow.company.add_one_and_get_obj(name=sign_up_data.company_name)
+        except IntegrityError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Company with this name already exists.",
+            )
+
+        user: UserModel = await self._add_admin_user(sign_up_data.first_name, sign_up_data.last_name, company.id)
+
+        account_new: AccountModel = await self._register_account(
+            email=sign_up_data.account,
+            password=sign_up_data.password,
+            user_id=user.id,
+            company_id=company.id,
+        )
+
+        return SingUpCompleteSchema(
+            account=account_new.email,
+            password=account_new.password,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            company_name=company.name,
+        )
+
+    async def _add_admin_user(self, first_name: str, last_name: str, company_id: UUID) -> UserModel:
+        return await self.uow.user.add_one_and_get_obj(
+            first_name=first_name,
+            last_name=last_name,
+            company_id=company_id,
+            is_admin=True,
+        )
+
+    async def _register_account(
+            self, email: EmailStr, password: str, user_id: int | str | UUID, company_id: UUID) -> AccountModel:
+        hashed_password = hash_password(password)
+        return await self.uow.account.add_one_and_get_obj(
+            email=email,
+            password=hashed_password,
+            user_id=user_id,
+            company_id=company_id,
+        )

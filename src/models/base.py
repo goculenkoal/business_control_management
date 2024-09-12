@@ -4,7 +4,6 @@ from uuid import uuid4
 from sqlalchemy import UUID, DateTime, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
-
 dt_now_utc_sql = text("TIMEZONE('utc', now())")
 
 
@@ -19,3 +18,7 @@ class BaseModel(DeclarativeBase):
         server_default=dt_now_utc_sql,
         onupdate=dt_now_utc_sql,
     )
+
+
+class BaseModelCompany(DeclarativeBase):
+    pass

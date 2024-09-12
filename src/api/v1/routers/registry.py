@@ -1,20 +1,31 @@
 from typing import TYPE_CHECKING
-from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import EmailStr
-from starlette import status
+
 from starlette.status import HTTP_201_CREATED, HTTP_200_OK
 
-from src.schemas.sign_up import SingUpSchema
+
+from src.schemas.sign_up import SingUpSchema, SingUpCompleteSchema, SignUpCompleteResponse
 from src.schemas.invite import CreateInviteResponse
-from src.schemas.account import AccountResponse, CreateAccountRequest
 from src.services.account import AccountService
 
 if TYPE_CHECKING:
     from src.models.invite import InviteModel
 
 router = APIRouter(prefix="/auth/v1", tags=["Auth"])
+
+
+@router.post(
+    path="/sign-up-complete",
+    status_code=HTTP_201_CREATED,
+)
+async def sign_up_complete(
+        account: SingUpCompleteSchema,
+        service: AccountService = Depends(AccountService),
+) -> SignUpCompleteResponse:
+    company_with_admin_user = await service.register_company(account)
+    return SignUpCompleteResponse(payload=company_with_admin_user)
 
 
 @router.get(
@@ -49,38 +60,3 @@ async def sign_up(
     sign_up_account = await service.check_invite_token(account)
 
     return CreateInviteResponse(payload=sign_up_account.to_pydantic_schema())
-
-
-@router.get(
-    path="/{account_id}",
-    status_code=HTTP_200_OK,
-)
-async def find_account_by_id(
-        account_id: UUID,
-        service: AccountService = Depends(AccountService),
-) -> AccountResponse:
-    """Find account."""
-    account = await service.check_id_account(account_id)  # Передаем ID в вашу модель запроса
-
-    if not account:  # Проверяем, существует ли аккаунт
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Account not found",
-        )
-
-    return account.to_pydantic_schema()
-
-
-@router.post(
-    path="/register",
-    status_code=HTTP_201_CREATED,
-)
-async def create_account(
-        account: CreateAccountRequest,
-        service: AccountService = Depends(AccountService),
-) -> AccountResponse:
-    create_account_new = await service.create_account(account)
-    return AccountResponse(
-        id=create_account_new.id,
-        email=create_account_new.email,
-    )
