@@ -6,7 +6,8 @@ from sqlalchemy import UUID
 from sqlalchemy.exc import IntegrityError
 from starlette import status
 
-from schemas.account import AccountSchema
+from src.schemas.account import AccountSchema
+from src.schemas.user import CreateUserRequest, CreateUserSchemaAndEmailAndId, RequestChangeEmailSchema
 from src.models.user import UserModel
 from src.schemas.sign_up import SingUpSchema, SingUpCompleteSchema
 from src.models.invite import InviteModel
@@ -123,3 +124,76 @@ class AccountService(BaseService):
             email: EmailStr,
     ) -> AccountSchema | None:
         return await self.uow.account.get_by_query_one_or_none(email=email)
+
+    @transaction_mode
+    async def update_user_info(
+            self,
+            account: AccountSchema,
+            new_data: CreateUserRequest,
+    ) -> CreateUserSchemaAndEmailAndId:
+
+        account: AccountModel | None = await self.uow.account.get_by_query_one_or_none(id=account.id)
+        if not account:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No authorization")
+        user: UserModel | None = await self.uow.user.update_one_by_id(account.user_id)
+        if not user:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User does not exist")
+
+        user.first_name = new_data.first_name
+        user.last_name = new_data.last_name
+        user.middle_name = new_data.middle_name
+
+        updated_user: UserModel = await self.uow.user.update_one_by_id(
+            account.user_id, first_name=user.first_name, last_name=user.last_name, middle_name=user.middle_name,
+        )
+        if not updated_user:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return CreateUserSchemaAndEmailAndId(
+            id=user.id,
+            first_name=updated_user.first_name,
+            last_name=updated_user.last_name,
+            middle_name=updated_user.middle_name,
+            email=account.email,
+        )
+
+    @transaction_mode
+    async def request_for_change_email(
+        self,
+        new_email: EmailStr,
+        account: AccountSchema,
+    ) -> RequestChangeEmailSchema:
+
+        code = generate_code()
+        invite_exist: bool = await self.uow.account.check_account_exist(new_email)
+        if not invite_exist:
+            await self.uow.invite.add_one(email=new_email, code=code)
+            send_invite_code_to_email(new_email, code)
+        else:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This email already exists")
+
+        user_id = await self.uow.account.get_user_id_from_account(account.id)
+
+        if not user_id:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User in not found")
+        return RequestChangeEmailSchema(
+            old_email=account.email,
+            new_email=new_email,
+            user_id=user_id,
+        )
+
+    @transaction_mode
+    async def check_and_change_email(
+            self,
+            code: int,
+            account: AccountSchema,
+    ) -> RequestChangeEmailSchema:
+
+        new_email: EmailStr = await self.uow.invite.get_email_from_code(code)
+        if not new_email:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Code is invalid")
+        new_account: AccountModel = await self.uow.account.update_one_by_id(account.id, email=new_email)
+        return RequestChangeEmailSchema(
+            old_email=account.email,
+            new_email=new_account.email,
+            user_id=new_account.user_id,
+        )

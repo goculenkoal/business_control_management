@@ -6,7 +6,11 @@ from pydantic import EmailStr
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED
 
 import auth.utils
-from src.api.v1.routers.auth_utils import validate_auth_account, get_current_token_payload, get_current_auth_active_account
+from src.api.v1.routers.auth_utils import (
+    validate_auth_account,
+    get_current_token_payload,
+    get_current_auth_active_account,
+)
 
 from src.schemas.invite import CreateInviteResponse
 from src.schemas.sign_up import SingUpCompleteSchema, SignUpCompleteResponse, SingUpSchema
