@@ -3,7 +3,7 @@ from uuid import UUID
 from sqlalchemy import String, Boolean, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.schemas.schemas import UserDB
+from src.schemas.user import UserDB
 from src.models.base import BaseModel
 
 

@@ -42,3 +42,4 @@ build/
 
 # Pytest
 .cache
+/certs

@@ -6,6 +6,7 @@ from sqlalchemy import UUID
 from sqlalchemy.exc import IntegrityError
 from starlette import status
 
+from schemas.account import AccountSchema
 from src.models.user import UserModel
 from src.schemas.sign_up import SingUpSchema, SingUpCompleteSchema
 from src.models.invite import InviteModel
@@ -67,7 +68,7 @@ class AccountService(BaseService):
 
         # Если приглашение не найдено, выбрасываем ошибку
         if invite is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invite token not found or expired")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invite token.py not found or expired")
 
         return invite
 
@@ -115,3 +116,10 @@ class AccountService(BaseService):
             user_id=user_id,
             company_id=company_id,
         )
+
+    @transaction_mode
+    async def check_account_and_return_obj(
+            self,
+            email: EmailStr,
+    ) -> AccountSchema | None:
+        return await self.uow.account.get_by_query_one_or_none(email=email)

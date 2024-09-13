@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, conint, EmailStr
 
-from src.schemas.schemas import BaseCreateResponse
+from src.schemas.base_response import BaseCreateResponse
 
 
 class SingUpSchema(BaseModel):

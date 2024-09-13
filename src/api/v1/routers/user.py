@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from starlette.status import HTTP_201_CREATED
 
 
-from src.schemas.schemas import CreateUserRequest, CreateUserResponse
+from src.schemas.user import CreateUserRequest, CreateUserResponse
 from src.services.user import UserService
 
 if TYPE_CHECKING:

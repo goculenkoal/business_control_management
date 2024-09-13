@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import UUID4, BaseModel
 
-from src.schemas.schemas import BaseCreateResponse
+from src.schemas.base_response import BaseCreateResponse
 
 
 class InviteId(BaseModel):

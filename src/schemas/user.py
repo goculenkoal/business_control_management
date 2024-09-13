@@ -1,6 +1,7 @@
 
-from pydantic import BaseModel, UUID4, Field
-from starlette.status import HTTP_201_CREATED, HTTP_200_OK
+from pydantic import BaseModel, UUID4, Field, ConfigDict, EmailStr
+
+from src.schemas.base_response import BaseCreateResponse
 
 
 class UserID(BaseModel):
@@ -18,15 +19,13 @@ class UserDB(UserID, CreateUserRequest):
     pass
 
 
-class BaseResponse(BaseModel):
-    status: int = HTTP_200_OK
-    error: bool = False
-
-
-class BaseCreateResponse(BaseResponse):
-    status: int = HTTP_201_CREATED
-    error: bool = False
-
-
 class CreateUserResponse(BaseCreateResponse):
     payload: UserDB
+
+
+class UserSchema(BaseModel):
+    model_config = ConfigDict(strict=True)
+    username: str
+    password: bytes
+    email: EmailStr | None
+    is_active: bool = True
