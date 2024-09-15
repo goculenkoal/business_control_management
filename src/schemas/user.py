@@ -21,6 +21,11 @@ class CreateUserSchemaAndEmailAndId(CreateUserSchemaAndEmail):
     id: UUID4
 
 
+class UserInvitationResponse(BaseResponse):
+    payload: CreateUserSchemaAndEmailAndId
+    detail: str
+
+
 class RequestChangeEmailSchema(BaseModel):
     old_email: EmailStr
     new_email: EmailStr

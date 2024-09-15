@@ -67,7 +67,6 @@ class AccountService(BaseService):
             code=account.invite_token,
         )
 
-        # Если приглашение не найдено, выбрасываем ошибку
         if invite is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invite token.py not found or expired")
 
@@ -119,6 +118,17 @@ class AccountService(BaseService):
         )
 
     @transaction_mode
+    async def create_account(
+            self, user_id: int | str | UUID, email: EmailStr, password: str, company_id: UUID) -> AccountModel:
+        hashed_password = hash_password(password)
+        return await self.uow.account.add_one_and_get_obj(
+            email=email,
+            password=hashed_password,
+            user_id=user_id,
+            company_id=company_id,
+        )
+
+    @transaction_mode
     async def check_account_and_return_obj(
             self,
             email: EmailStr,
@@ -158,9 +168,9 @@ class AccountService(BaseService):
 
     @transaction_mode
     async def request_for_change_email(
-        self,
-        new_email: EmailStr,
-        account: AccountSchema,
+            self,
+            new_email: EmailStr,
+            account: AccountSchema,
     ) -> RequestChangeEmailSchema:
 
         code = generate_code()

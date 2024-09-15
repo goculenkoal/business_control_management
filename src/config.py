@@ -17,6 +17,10 @@ class AuthJWT(BaseModel):
     refresh_token_expire_days: int = 30
 
 
+class SecretKey(BaseModel):
+    secret_key: str
+
+
 class Settings(BaseSettings):
     MODE: str
 
@@ -28,6 +32,7 @@ class Settings(BaseSettings):
     SENDER_EMAIL: str
     SENDER_PASSWORD: str
     auth_jwt: AuthJWT = AuthJWT()
+    secret_key: str
 
     @property
     def DB_URL(self) -> str:

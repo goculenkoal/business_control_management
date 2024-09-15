@@ -18,10 +18,10 @@ class AccountRepository(SqlAlchemyRepository):
             .filter(self.model.email == email)
         )
         result: Result = await self.session.execute(query)
-        account = result.scalars().first()  # Извлекаем первую запись, если она существует
+        account = result.scalars().first()
         return account is not None
 
-    async def get_user_id_from_account(self, account_id: uuid) -> uuid:
-        query = select(self.model.user_id).where(self.model.id == account_id)
+    async def get_user_id_from_account(self, account_user_id: uuid) -> uuid:
+        query = select(self.model.user_id).where(self.model.id == account_user_id)
         user_id: Result | None = await self.session.execute(query)
         return user_id.scalar_one_or_none()
