@@ -5,8 +5,8 @@ from pydantic import EmailStr
 
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED
 
-import auth.utils
-from src.api.v1.routers.auth_utils import (
+import utils.auth.utils
+from utils.auth.auth_utils import (
     validate_auth_account,
     get_current_token_payload,
     get_current_auth_active_account,
@@ -85,7 +85,7 @@ async def auth_account_jwt(
         "username": account.email,
         "user_id": str(account.user_id),
     }
-    token = auth.utils.encode_jwt(jwt_payload)
+    token = utils.auth.utils.encode_jwt(jwt_payload)
     token_info = TokenInfo(access_token=token)
 
     return TokenInfoResponse(payload=token_info)

@@ -6,6 +6,7 @@ from sqlalchemy import UUID
 from sqlalchemy.exc import IntegrityError
 from starlette import status
 
+
 from src.schemas.account import AccountSchema
 from src.schemas.user import CreateUserRequest, CreateUserSchemaAndEmailAndId, RequestChangeEmailSchema
 from src.models.user import UserModel

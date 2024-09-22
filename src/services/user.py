@@ -1,5 +1,4 @@
 import uuid
-
 from fastapi import HTTPException
 from starlette import status
 
@@ -21,11 +20,10 @@ class UserService(BaseService):
         return await self.uow.user.add_one_and_get_obj(**user.model_dump())
 
     @transaction_mode
-    async def get_user_by_id(self, user_id: uuid) -> UserModel:
+    async def get_user_by_id(self, user_id: uuid.UUID | None) -> UserModel:
         if user_id is None:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="User ID is missing in the token.py payload.",
             )
 
         user = await self.uow.user.get_by_query_one_or_none(id=user_id)
@@ -48,13 +46,6 @@ class UserService(BaseService):
         account__mail_exist: bool = await self.uow.account.check_account_exist(employee.email)
         if account__mail_exist:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This email already exists")
-
-        admin_user_id: uuid.UUID = await self.uow.account.get_user_id_from_account(account.id)
-        is_admin: bool = await self.uow.user.check_if_user_is_admin(admin_user_id)
-        print(admin_user_id)
-        print(is_admin)
-        if not is_admin:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to create users")
 
         user: UserModel = await self.uow.user.add_one_and_get_obj(
             first_name=employee.first_name,

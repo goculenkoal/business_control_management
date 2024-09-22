@@ -4,9 +4,9 @@ from fastapi import APIRouter, Depends
 from pydantic import EmailStr
 from starlette.status import HTTP_201_CREATED, HTTP_200_OK
 
-
+from utils.auth.admin import check_user_is_admin
 from src.services.account import AccountService
-from src.api.v1.routers.auth_utils import get_current_auth_active_account
+from utils.auth.auth_utils import get_current_auth_active_account
 from src.schemas.account import AccountSchema, RequestPasswordCreate, ConfirmRegistrationResponse
 from src.schemas.user import CreateUserRequest, CreateUserResponse, CreateUserSchemaAndEmailAndId, UpdateUserResponse, \
     RequestChangeEmailSchema, ChangeEmailResponse, CreateUserSchemaAndEmail, UserInvitationResponse
@@ -83,6 +83,7 @@ async def create_new_user(
         new_user: CreateUserSchemaAndEmail,
         account: AccountSchema = Depends(get_current_auth_active_account),
         service: UserService = Depends(UserService),
+        is_admin: bool = Depends(check_user_is_admin),
 ) -> UserInvitationResponse:
     """Создает нового сотрудника, и привязывает к компании,отправляет приглашение на почту."""
     user: CreateUserSchemaAndEmailAndId = await service.add_one_user_for_company(new_user, account)

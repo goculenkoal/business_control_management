@@ -4,15 +4,24 @@ from collections.abc import Callable, Awaitable
 from types import TracebackType
 from typing import Never, Any
 
+from src.repositories.employee import EmployeeRepository
+from src.repositories.position import PositionRepository
+from src.repositories.department import DepartmentRepository
 from src.repositories.company import CompanyRepository
 from src.repositories.invite import InviteRepository
 from src.repositories.account import AccountRepository
 from src.databases.database import async_session_maker
-from src.repositories.user import EmployeeRepository
+from src.repositories.user import UserRepository
 
 
 class AbstractUnitOfWork(ABC):
-    user: EmployeeRepository
+    user: UserRepository
+    account: AccountRepository
+    invite: InviteRepository
+    company: CompanyRepository
+    department: DepartmentRepository
+    position: PositionRepository
+    employee: EmployeeRepository
 
     @abstractmethod
     def __init__(self) -> None:
@@ -48,10 +57,13 @@ class UnitOfWork(AbstractUnitOfWork):
 
     async def __aenter__(self) -> None:
         self.session = self.session_factory()
-        self.user = EmployeeRepository(self.session)
+        self.user = UserRepository(self.session)
         self.account = AccountRepository(self.session)
         self.invite = InviteRepository(self.session)
         self.company = CompanyRepository(self.session)
+        self.department = DepartmentRepository(self.session)
+        self.position = PositionRepository(self.session)
+        self.employee = EmployeeRepository(self.session)
 
     async def __aexit__(
             self,

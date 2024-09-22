@@ -6,6 +6,7 @@ from fastapi.responses import ORJSONResponse
 
 from src.api.v1.routers.user import router
 from src.api.v1.routers.registry import router as router_auth
+from src.api.v1.routers.department import router as router_department
 from metadata import TITLE, DESCRIPTION, VERSION, TAG_METADATA
 
 
@@ -38,7 +39,7 @@ def create_fast_api_app() -> FastAPI:
 
     _app.include_router(router, prefix="/api")
     _app.include_router(router_auth, prefix="/api")
-
+    _app.include_router(router_department, prefix="/api")
     return _app
 
 

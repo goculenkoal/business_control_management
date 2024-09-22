@@ -2,7 +2,7 @@ from uuid import UUID
 
 from sqlalchemy import String, Boolean, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
+from src.models.department.employee import Employee   # noqa: TCH001
 from src.schemas.user import UserDB
 from src.models.base import BaseModel
 
@@ -18,11 +18,12 @@ class UserModel(BaseModel):
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # Внешний ключ, ссылающийся на компанию
-    company_id: Mapped[UUID] = mapped_column(ForeignKey("company.id"), nullable=True)
+    company_id: Mapped[UUID] = mapped_column(ForeignKey("company.id", ondelete="CASCADE"), nullable=True)
     # Связь -> модель Company
     company: Mapped["CompanyModel"] = relationship("CompanyModel", back_populates="users")
 
     account: Mapped["AccountModel"] = relationship("AccountModel", back_populates="user", uselist=False)
+    employee: Mapped["Employee"] = relationship("Employee", back_populates="user", uselist=False)
 
     def to_pydantic_schema(self) -> UserDB:
         return UserDB(**self.__dict__)

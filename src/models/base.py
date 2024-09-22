@@ -20,5 +20,5 @@ class BaseModel(DeclarativeBase):
     )
 
 
-class BaseModelCompany(DeclarativeBase):
-    pass
+class BaseDepartModel(DeclarativeBase):
+    __abstract__ = True
