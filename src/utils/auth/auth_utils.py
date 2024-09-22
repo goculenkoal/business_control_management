@@ -6,7 +6,7 @@ from jwt import InvalidTokenError
 from pydantic import EmailStr
 from starlette import status
 
-import auth.utils
+import utils.auth.utils
 from schemas.account import AccountSchema
 from services.account import AccountService
 from utils.hash_password import check_password
@@ -41,7 +41,7 @@ def get_current_token_payload(
 ) -> dict[str, Any]:
     token = credentials.credentials
     try:
-        payload = auth.utils.decoded_jwt(
+        payload = utils.auth.utils.decoded_jwt(
             token=token,
         )
     except InvalidTokenError as e:
